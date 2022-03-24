@@ -2,13 +2,7 @@ class Game {
   constructor() {
     this.resetTitle = createElement("h2");
     this.resetButton = createButton("");
-    
-    this.leadeboardTitle = createElement("h2");
 
-    this.leader1 = createElement("h2");
-    this.leader2 = createElement("h2");
-    this.playerMoving = false;
-    
   }
 
   getState() {
@@ -40,18 +34,18 @@ class Game {
 
     cars = [car1, car2];
 
-    // C38 AM
+    // C38 TA
     fuels = new Group();
     powerCoins = new Group();
 
-    // Agregando sprites de combustible en el juego
+    // Agregando sprite de combustible al juego
     this.addSprites(fuels, 4, fuelImage, 0.02);
 
-    // Agregando sprites de monedas en el juego
+    // Agregando sprite de monedas al juego
     this.addSprites(powerCoins, 18, powerCoinImage, 0.09);
   }
 
-  // C38 AM
+  // C38 TA
   addSprites(spriteGroup, numberOfSprites, spriteImage, scale) {
     for (var i = 0; i < numberOfSprites; i++) {
       var x, y;
@@ -71,49 +65,39 @@ class Game {
     form.hide();
     form.titleImg.position(40, 50);
     form.titleImg.class("gameTitleAfterEffect");
+   
+
+    //C39
     this.resetTitle.html("Reiniciar juego");
     this.resetTitle.class("resetText");
     this.resetTitle.position(width / 2 + 200, 40);
 
     this.resetButton.class("resetButton");
     this.resetButton.position(width / 2 + 230, 100);
-    this.leadeboardTitle.html("Tabla de líderes");
-    this.leadeboardTitle.class("resetText");
-    this.leadeboardTitle.position(width / 3 - 60, 40);
-
-    this.leader1.class("leadersText");
-    this.leader1.position(width / 3 - 50, 80);
-
-    this.leader2.class("leadersText");
-    this.leader2.position(width / 3 - 50, 130);
   }
 
   play() {
     this.handleElements();
-    this.handleResetButton();
+
     Player.getPlayersInfo();
-    player.getCarsAtEnd();
 
     if (allPlayers !== undefined) {
       image(track, 0, -height * 5, width, height * 6);
-      this.showLeaderboard();
-      this.showLife();
-      this.showfuel();
 
-      // Índice del arreglo
+      //índice de la matriz
       var index = 0;
       for (var plr in allPlayers) {
-        // Agrega 1 al índice por cada ciclo
+        //agrega 1 al índice por cada bucle
         index = index + 1;
 
-        // Usa datos de la base de datos para mostrar los autos en dirección x e y
+        //utiliza datos de la base de datos para mostrar los autos en la dirección x e y
         var x = allPlayers[plr].positionX;
         var y = height - allPlayers[plr].positionY;
 
         cars[index - 1].position.x = x;
         cars[index - 1].position.y = y;
 
-        // C38  AA
+        // C38  SA
         if (index === player.index) {
           stroke(10);
           fill("red");
@@ -128,167 +112,62 @@ class Game {
 
         }
       }
-      if(this.playerMoving){
-        player.positionY += 5;
-        player.update();
-      }
 
-      // Manipulación de eventos de teclado
+      // manejando evetnso keyboard
       if (keyIsDown(UP_ARROW)) {
         player.positionY += 10;
         player.update();
       }
-      this.handlePlayerControls();
-      const finishLine = height * 6 - 100;
-
-      if (player.positionY > finishLine) {
-        gameState = 2;
-        player.rank += 1;
-        Player.updateCarsAtEnd(player.rank);
-        player.update();
-        this.showRank();
-      }
-
+this.handlePlayerControls();
       drawSprites();
     }
   }
 
   handleFuel(index) {
-   
     // Agregando combustible
     cars[index - 1].overlap(fuels, function(collector, collected) {
       player.fuel = 185;
-      // "collected" es el sprite en el grupo de coleccionables que detona
-      // el evento
+      //recolectado está el sprite en el grupo de recolectables que activarón
+      //el evento
       collected.remove();
     });
-    if(player.fuel > 0 && this.playerMoving){
-      player.fuel -=0.3;
-    }
-    if(player.fuel <= 0){
-      gameState = 2;
-      this.gameOver();
-    }
   }
 
   handlePowerCoins(index) {
-    // Agregando monedas
     cars[index - 1].overlap(powerCoins, function(collector, collected) {
       player.score += 21;
       player.update();
-      // "collected" es el sprite en el grupo de coleccionables que detona
-      // el evento
+      //recolectado está el sprite en el grupo de recolectables que activarón
+      //el evento
       collected.remove();
     });
-  }
+  
+}
 
 handleResetButton() {
   this.resetButton.mousePressed(() => {
-    database.ref("/").set({
-      playerCount: 0,
-      gameState: 0,
-      players: {}
-    });
-    window.location.reload();
+  database.ref("/").set({
+    carsAtEnd:0,
+    playerCount:0,
+    gameState:0,
+    players:{}
+  });
+  window.location.reload();
   });
 }
-showfuel(){
-  push();
-  image(fuelImage,width/2-130,height-player.positionY-100,20,20);
-  fill("white");
-  rect(width/2-100,height-player.positionY-100,185,20);
-  fill("red");
-  rect(width/2-100,height-player.positionY-100,player.fuel,20);
-  noStroke();
-  pop();
-}
-showLife() {
-  push();
-  image(lifeImage, width / 2 - 130, height - player.positionY - 400, 20, 20);
-  fill("white");
-  rect(width / 2 - 100, height - player.positionY - 400, 185, 20);
-  fill("#f50057");
-  rect(width / 2 - 100, height - player.positionY - 400, player.life, 20);
-  noStroke();
-  pop();
-}
-showLeaderboard() {
-  var leader1, leader2;
-  var players = Object.values(allPlayers);
-  if (
-    (players[0].rank === 0 && players[1].rank === 0) ||
-    players[0].rank === 1
-  ) {
-    // &emsp;    Esta etiqueta se usa para mostrar cuatro espacios
-    leader1 =
-      players[0].rank +
-      "&emsp;" +
-      players[0].name +
-      "&emsp;" +
-      players[0].score;
-
-    leader2 =
-      players[1].rank +
-      "&emsp;" +
-      players[1].name +
-      "&emsp;" +
-      players[1].score;
-  }
-
-  if (players[1].rank === 1) {
-    leader1 =
-      players[1].rank +
-      "&emsp;" +
-      players[1].name +
-      "&emsp;" +
-      players[1].score;
-
-    leader2 =
-      players[0].rank +
-      "&emsp;" +
-      players[0].name +
-      "&emsp;" +
-      players[0].score;
-  }
-
-  this.leader1.html(leader1);
-  this.leader2.html(leader2);
-}
-
 handlePlayerControls() {
-  this.playerMoving = true
   if (keyIsDown(UP_ARROW)) {
     player.positionY += 10;
     player.update();
   }
 
-  if (keyIsDown(LEFT_ARROW) && player.positionX > width / 3 - 50) {
-    player.positionX -= 5;
+  if (keyIsDown(LEFT_ARROW)&& player.positionX > width/3-50) {
+    player.positionX -= 10;
     player.update();
   }
-
-  if (keyIsDown(RIGHT_ARROW) && player.positionX < width / 2 + 300) {
-    player.positionX += 5;
+  if (keyIsDown(RIGHT_ARROW)&& player.positionX < width/2+300) {
+    player.positionX += 10;
     player.update();
   }
-}
-showRank() {
-  swal({
-    title: `¡Impresionante!${"\n"}Posición${"\n"}${player.rank}`,
-    text: "Cruzaste la línea de meta con éxito",
-    imageUrl:
-      "https://raw.githubusercontent.com/vishalgaddam873/p5-multiplayer-car-race-game/master/assets/cup.png",
-    imageSize: "100x100",
-    confirmButtonText: "Ok"
-  });
-}
-gameOver(){
-  swal({
-    title:"fin del juego",
-    text:"f",
-    imageUrl:"https://cdn.shopify.com/s/files/1/1061/1924/products/Thumbs_Down_Sign_Emoji_Icon_ios10_grande.png",
-    imageSize:"100x100",
-    confirmButtonText:"thanks game"
-  })
 }
 }

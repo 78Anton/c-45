@@ -1,8 +1,8 @@
 class Form {
   constructor() {
-    this.input = createInput("").attribute("placeholder", "Introduce tu nombre");
+    this.input = createInput("").attribute("placeholder", "Ingresa tu nombre");
     this.playButton = createButton("Jugar");
-    this.titleImg = createImg("./assets/title.png", "título del juego");
+    this.titleImg = createImg("./assets/title.png", "game title");
     this.greeting = createElement("h2");
   }
 
@@ -33,15 +33,15 @@ class Form {
       this.input.hide();
       this.playButton.hide();
       var message = `
-      Hola, ${this.input.value()}
-      </br>Espera a que se una otro jugador...`;
+      Hola ${this.input.value()}
+      </br>espera a que otro jugador se una...`;
       this.greeting.html(message);
       playerCount += 1;
       player.name = this.input.value();
       player.index = playerCount;
-    player.addPlayer();//aaa
+    player.addPlayer();//aa
       player.updateCount(playerCount); // BP
-     player.getDistance(); //aaa
+     player.getDistance(); //aa
     });
   }
 
